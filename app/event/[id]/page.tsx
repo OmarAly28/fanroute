@@ -2,6 +2,7 @@ import Link from "next/link";
 import CopyLink from "./CopyLink";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+export const dynamic = "force-dynamic";
 
 type EventRow = {
   id: string;
