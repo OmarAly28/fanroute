@@ -161,10 +161,12 @@ export default async function EventPage({
             </a>
           )}
           
-          <a href={calLink} target="_blank" rel="noreferrer">
-            Add to calendar →
-          </a>
-
+          {calLink && (
+            <a href={calLink} target="_blank" rel="noreferrer">
+              Add to calendar →
+            </a>
+          )}
+          
           <CopyLink />
           {ev.external_link && (
             <a href={ev.external_link} target="_blank" rel="noreferrer">
