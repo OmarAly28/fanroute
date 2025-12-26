@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Fanbase 2026",
-  description: "Find watch parties and matchday essentials.",
+  title: "FanRoute",
+  description: "Find World Cup watch parties and fan meetups by host city.",
 };
 
 export default function RootLayout({
