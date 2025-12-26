@@ -2,6 +2,7 @@ import Link from "next/link";
 import CopyLink from "./CopyLink";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import EventActions from "./EventActions";
 export const dynamic = "force-dynamic";
 
 type EventRow = {
@@ -158,26 +159,12 @@ export default async function EventPage({
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 14 }}>
-          {mapLink && (
-            <a href={mapLink} target="_blank" rel="noreferrer">
-              Open in Maps →
-            </a>
-          )}
-          
-          {calLink && (
-            <a href={calLink} target="_blank" rel="noreferrer">
-              Add to calendar →
-            </a>
-          )}
+        <EventActions
+            mapLink={mapLink}
+            calLink={calLink}
+            externalLink={ev.external_link}
+        />
 
-          <CopyLink />
-          {ev.external_link && (
-            <a href={ev.external_link} target="_blank" rel="noreferrer">
-              More info →
-            </a>
-          )}
-        </div>
 
         <p style={{ marginTop: 14, opacity: 0.7 }}>
           Public listings are community submitted. Use normal travel caution.
