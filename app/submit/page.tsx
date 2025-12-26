@@ -16,7 +16,6 @@ const TAG_OPTIONS = [
 ] as const;
 
 function toLocalDatetimeValue(d: Date) {
-  // yyyy-MM-ddTHH:mm
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
     d.getHours()
@@ -36,7 +35,7 @@ export default function SubmitPage() {
   const defaultTime = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
-    d.setHours(19, 0, 0, 0); // tomorrow 7pm
+    d.setHours(19, 0, 0, 0);
     return toLocalDatetimeValue(d);
   }, []);
 
@@ -47,6 +46,10 @@ export default function SubmitPage() {
   const [address, setAddress] = useState("");
   const [generalArea, setGeneralArea] = useState("");
   const [externalLink, setExternalLink] = useState("");
+
+  // NEW: spam friction fields
+  const [email, setEmail] = useState("");
+  const [notes, setNotes] = useState("");
 
   const [tags, setTags] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -85,17 +88,17 @@ export default function SubmitPage() {
     if (!venueName.trim()) return "Venue name is required.";
     if (!startsAtLocal) return "Start date/time is required.";
 
-    // watch party: match label required
+    // NEW: required contact email (not public)
+    if (!email.trim()) return "Email is required (not public).";
+    // basic email shape check
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return "Enter a valid email.";
+
     if (eventType === "watch_party" && !matchLabel.trim())
       return "Match label is required for watch parties (e.g., Morocco vs Spain).";
 
-    // location rule: need either address OR general area
     if (!address.trim() && !generalArea.trim())
       return "Provide either an address or a general area.";
 
-    // title:
-    // - for meetups: title required
-    // - for watch parties: title can be auto-filled
     if (eventType === "meetup" && !title.trim())
       return "Title is required for meetups.";
 
@@ -114,12 +117,11 @@ export default function SubmitPage() {
 
     setSubmitting(true);
     try {
-      // Convert local datetime input -> ISO
       const iso = new Date(startsAtLocal).toISOString();
 
       const finalTitle =
         eventType === "watch_party"
-          ? (title.trim() || `${matchLabel.trim()} Watch Party`)
+          ? title.trim() || `${matchLabel.trim()} Watch Party`
           : title.trim();
 
       const payload = {
@@ -136,12 +138,17 @@ export default function SubmitPage() {
         external_link: externalLink.trim() || null,
         status: "pending",
         is_featured: false,
+
+        // NEW fields (must exist in Supabase table)
+        submitter_email: email.trim(),
+        submitter_notes: notes.trim() || null,
       };
 
       const { error } = await supabase.from("events").insert(payload);
       if (error) throw new Error(error.message);
 
       setStatus("Submitted! Pending review.");
+
       // light reset
       setMatchLabel("");
       setTitle("");
@@ -150,6 +157,8 @@ export default function SubmitPage() {
       setGeneralArea("");
       setExternalLink("");
       setTags([]);
+      setEmail("");
+      setNotes("");
     } catch (ex: any) {
       setStatus(`❌ Submit failed: ${ex?.message ?? "unknown error"}`);
     } finally {
@@ -165,7 +174,7 @@ export default function SubmitPage() {
 
       <h1 style={{ fontSize: 32, fontWeight: 800 }}>Submit</h1>
       <p style={{ marginTop: 6, opacity: 0.8 }}>
-        Add a watch party or meetup (MVP form).
+        Add a watch party or meetup (pending approval).
       </p>
 
       <form
@@ -310,19 +319,37 @@ export default function SubmitPage() {
           />
         </label>
 
+        {/* NEW: contact email + notes */}
+        <label style={{ display: "grid", gap: 6 }}>
+          <span>Your email (required, not public)</span>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+          />
+        </label>
+
+        <label style={{ display: "grid", gap: 6 }}>
+          <span>Notes (optional)</span>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={4}
+            placeholder="Anything helpful (e.g., reservation needed, exact entrance, etc.)"
+          />
+        </label>
+
         <button disabled={submitting} type="submit">
           {submitting ? "Submitting..." : "Submit"}
         </button>
 
-        {status && (
-          <div style={{ marginTop: 6, opacity: 0.9 }}>
-            {status}
-          </div>
-        )}
+        {status && <div style={{ marginTop: 6, opacity: 0.9 }}>{status}</div>}
       </form>
 
       <p style={{ marginTop: 14, opacity: 0.7 }}>
-        After submitting, go back to the city page and refresh.
+        After submitting, it won’t appear publicly until approved.
       </p>
     </main>
   );
