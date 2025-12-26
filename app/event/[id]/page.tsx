@@ -125,10 +125,6 @@ export default async function EventPage({
           marginTop: 16,
         }}
       >
-        <div style={{ marginTop: 10, fontWeight: 900, color: "red" }}>
-          CALENDAR TEST
-        </div>
-
         <div style={{ fontSize: 18, fontWeight: 800 }}>
           📍 {ev.venue_name} · {VenueTypeLabel(ev.venue_type)}
         </div>
