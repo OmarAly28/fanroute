@@ -31,7 +31,7 @@ export default function RootLayout({
             }}
           >
             <Link href="/" style={{ fontWeight: 900, textDecoration: "none" }}>
-              Fanbase 2026
+              FanRoute
             </Link>
 
             <div style={{ display: "flex", gap: 14 }}>
