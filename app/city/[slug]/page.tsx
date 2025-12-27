@@ -8,6 +8,7 @@ type City = {
   id: string;
   name: string;
   slug: string;
+  is_active: boolean;
 };
 
 type EventRow = {
@@ -21,6 +22,7 @@ type EventRow = {
   venue_type: "cafe" | "public" | "fan_hosted" | "bar";
   tags: string[];
   is_featured: boolean;
+  external_link: string | null;
 };
 
 function prettyWhen(iso: string) {
@@ -64,12 +66,13 @@ export default async function CityPage({
   const { data: events, error: evErr } = await supabase
     .from("events")
     .select(
-      "id,title,match_label,starts_at,venue_name,address,general_area,venue_type,tags,is_featured"
+      "id,title,match_label,starts_at,venue_name,address,general_area,venue_type,tags,is_featured,external_link"
     )
     .eq("city_id", c.id)
     .eq("event_type", "watch_party")
     .gt("starts_at", nowIso)
     .eq("status", "approved")
+    .order("is_featured", { ascending: false })
     .order("starts_at", { ascending: true });
 
   if (evErr) {
